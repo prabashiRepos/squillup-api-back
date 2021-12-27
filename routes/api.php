@@ -245,7 +245,7 @@ $api->version('v1', function ($api) {
         //$api->post('viewPlans', 'App\Api\V1\Controllers\PlansController@viewPlans');
         $api->post('requestOtp', 'App\Api\V1\Controllers\ParentAuth\SignUpController@requestOtp');
         $api->post('verifyOtp', 'App\Api\V1\Controllers\ParentAuth\SignUpController@verifyOtp');
-        $api->post('login', 'App\Api\V1\Controllers\ParentAuth\LoginController@login')->name('login');
+        $api->post('login', 'App\Api\V1\Controllers\ParentAuth\LoginController@parentLogin')->name('parentLogin');
         $api->post('logout', 'App\Api\V1\Controllers\ParentAuth\LogoutController@logout');
 
     });

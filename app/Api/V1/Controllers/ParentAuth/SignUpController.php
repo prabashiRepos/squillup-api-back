@@ -27,8 +27,7 @@ class SignUpController extends Controller
             'phone' => 'required|unique:users,phone|regex:/[0-9]{9}/',
             'country_code' => 'sometimes|required|integer',
             'password' => 'required|min:6|max:50',
-            'conf_password' => 'required|min:6|max:50',
-            //'captcha' => 'required|captcha',
+            'conf_password' => 'required|min:6|max:50'
         ]);
 
         $user = new User($request->all());
@@ -73,7 +72,8 @@ class SignUpController extends Controller
 
         return response()->json([
             'code' => 201,
-            'status' => 'ok',
+            'success' => true,
+            'status' => 'User Registered Successfully',
             'user' => $user,
             'token_type' => 'Bearer',
             'token' => $token,
@@ -101,12 +101,14 @@ class SignUpController extends Controller
         $authentication->save();
 
         try {
-            $notify = Notification::send(new OtpNotification($data));
+            Notification::route('mail', $request->email)->notify(new OtpNotification($data));
+
+            //$notify = Notification::send($data, new OtpNotification($data));
         } catch (\Exception$e) {
 
         }
 
-        return response()->json(['status' => Lang::get('messages.request_otp_success')], 201);
+        return response()->json(['success'=> true, 'status' => Lang::get('messages.request_otp_success'), 'data' => $data], 201);
     }
 
     public function verifyOtp(Request $request)
@@ -118,10 +120,10 @@ class SignUpController extends Controller
             //auth()->login($user, true);
             Authentication::where('otp', '=', $request->otp)->update(['expired' => false]);
             //$accessToken = auth()->user()->createToken('authToken')->accessToken;
-            response()->json(['status' => Lang::get('messages.otp_verified')], 201);
+            return response()->json(['success'=> true,'status' => Lang::get('messages.otp_verified')], 201);
             //return response(["status" => 200, "message" => "Success", 'user' => auth()->user(), 'access_token' => $accessToken]);
         } else {
-            return response()->json(['status' => Lang::get('messages.invalid_otp')], 401);
+            return response()->json(['success'=> false,'status' => Lang::get('messages.invalid_otp')], 401);
 
         }
     }

@@ -6,6 +6,7 @@ use Auth;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Api\V1\Requests\LoginRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -23,7 +24,7 @@ class LoginController extends Controller
      * @param 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function parentLogin(Request $request)
     {
         if ($this->hasTooManyLoginAttempts($request)) {
             $this->fireLockoutEvent($request);
@@ -65,7 +66,8 @@ class LoginController extends Controller
 
         return response()->json([
             'code'           => 201,
-            'status'         => 'ok',
+            'success' => true,
+            'status'         => 'Login Success',
             'user'           => $user,
             'token_type'     => 'Bearer',
             'token'          => $token,
