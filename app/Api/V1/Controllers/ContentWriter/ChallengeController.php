@@ -2,6 +2,7 @@
 
 namespace App\Api\V1\Controllers\ContentWriter;
 
+use App\Events\NotifyEvent;
 use Auth;
 use App\Models\Challenge;
 use Illuminate\Http\Request;
@@ -85,6 +86,8 @@ class ChallengeController extends Controller
                 ->with('subject')
                 ->with('grade')
                 ->find($challenge->id);
+
+        event(new  NotifyEvent('New challenge has been created by '.$challenge->user->first_name ." ". $challenge->user->last_name));
 
             return response()->json([
                 'code'   => 201,

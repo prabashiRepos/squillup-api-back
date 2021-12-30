@@ -16,6 +16,7 @@ use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Lang;
 use App\Api\V1\Controllers\Common\FilesController;
+use App\Events\NotifyEvent;
 use App\Models\Challenge;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -240,6 +241,7 @@ class QuestionController extends Controller
                 $testData->questions = $questionsArray;
                 $testData->save();
             }
+            
             return response()->json([
                 'code'   => 201,
                 'data'   => $question,

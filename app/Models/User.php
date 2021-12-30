@@ -101,4 +101,9 @@ class User extends Authenticatable
     {
         return $this->hasOne('App\Models\UserAssignLimit');
     }
+
+    public function user_group()
+    {
+        return $this->belongsToMany('App\Models\User', 'group_users' , 'parent_user_id','children_user_id');
+    }
 }

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Lang;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Api\V1\Controllers\ContentWriter\QuestionController;
+use App\Events\NotifyEvent;
 use Illuminate\Support\Facades\Storage;
 
 class PastPaperController extends Controller
@@ -69,6 +70,8 @@ class PastPaperController extends Controller
                     $query->select('id', 'name');
                 })
                 ->find($pastPaper->id);
+
+            event(new  NotifyEvent('New pastpaper has been created by '.$pastPaper->user->first_name ." ". $pastPaper->user->last_name));
 
             return response()->json([
                 'code'   => 201,

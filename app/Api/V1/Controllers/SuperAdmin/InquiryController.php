@@ -2,6 +2,7 @@
 
 namespace App\Api\V1\Controllers\SuperAdmin;
 
+use App\Events\NotifyEvent;
 use App\Models\Inquiry;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -102,12 +103,16 @@ class InquiryController extends Controller
 
         if($inquiry->save()){
 
+            $inquiry = inquiry::with(['user'])->find(value($request->user_id));
+
             $email = $request->email;
             $name = $request->name;
             $messages = $request->message;
 
-            Mail::to($email)->send(new SendThankYou($email,$name));
-            Mail::to('thushalangd@gmail.com')->send(new SendMailAdmin($email,$name,$messages));
+            // Mail::to($email)->send(new SendThankYou($email,$name));
+            // Mail::to('thushalangd@gmail.com')->send(new SendMailAdmin($email,$name,$messages));
+
+            event(new  NotifyEvent('New inquiry recevied from '.$inquiry->user->first_name ." ". $inquiry->user->last_name. " ( ".($inquiry->user->roles->first()->name ? : 'public')." ) "));
 
             return response()->json([
                 'code'   => 201,

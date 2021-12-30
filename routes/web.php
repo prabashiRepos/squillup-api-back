@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('vendor.notifications.pusher');
 });
 
 Route::get('stripe_success', 'App\Api\V1\Controllers\Parent\PlanController@stripeSuccess');

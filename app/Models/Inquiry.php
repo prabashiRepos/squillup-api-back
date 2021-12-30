@@ -32,4 +32,9 @@ class Inquiry extends Model
     {
         return "You have {$eventName} inquiry";
     }
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User');
+    }
 }

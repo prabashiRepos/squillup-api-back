@@ -8,12 +8,9 @@ class Cors
     public function handle($request, Closure $next)
     {
         $response = $next($request);
-        $response->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Content-Range, Content-Disposition, Content-Description, X-Auth-Token');
-        $response->header('Access-Control-Allow-Origin', '*');
-
-        $response->header('Access-Control-Allow-Methods', '*');
-        $response->header('Access-Control-Allow-Headers', '*');
-        $response->header('Content-Type: application/json', '*');
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-XSRF-TOKEN');
         return $response;
     }
 }

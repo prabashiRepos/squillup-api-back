@@ -56,4 +56,9 @@ class QnA extends Model
     {
         return $this->hasMany('App\Models\Reply','question_id','id');
     }
+
+    public function student()
+    {
+        return $this->belongsTo('App\Models\User','student_id','id');
+    }
 }

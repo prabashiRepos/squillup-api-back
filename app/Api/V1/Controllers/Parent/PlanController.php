@@ -2,6 +2,7 @@
 
 namespace App\Api\V1\Controllers\Parent;
 
+use App\Events\NotifyEvent;
 use DB;
 use Auth;
 use Validator;
@@ -15,6 +16,7 @@ use \Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Redirect;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Twilio\Rest\Client;
 
 class PlanController extends Controller
 {
@@ -32,7 +34,7 @@ class PlanController extends Controller
         // $this->middleware('ability:parent,order-plan', ['only' => ['delete']]);
 
         $this->middleware('role:parent', ['only' => ['viewMyInvoices']]);
-        $this->middleware('role:parent', ['only' => ['cancelPlan']]);
+        // $this->middleware('role:parent', ['only' => ['cancelPlan']]);
     }
 
     /**
@@ -42,7 +44,7 @@ class PlanController extends Controller
      */
     public function buyPlan(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         if($user->hasRole('parent'))  $request->merge(["parent_id" =>  $user->id]);
 
         $validator = Validator::make($request->all(), [
@@ -87,7 +89,7 @@ class PlanController extends Controller
                         'plan_id' => $plan->id,
                     ]
                 ]);
-         
+
                 $saveUserPlan = UsersPlan::create([
                     'user_id' => $user->id,
                     'plan_id' => $plan->id,
@@ -98,7 +100,11 @@ class PlanController extends Controller
                     'created_at' => date('Y-m-d h:i:s'),
                 ]);
 
-                // return Redirect::to($checkout_session->url);
+                $user_detail = User::with('user_group')->find($request->parent_id);
+
+                event(new  NotifyEvent($user_detail->first_name ." ". $user_detail->last_name. ' subscribed for ' .$plan->name));
+
+                return Redirect::to($checkout_session->url);
                 return response()->json(['url' => $checkout_session->url], 201);
             }
             else return response()->json([ 'status' => false, 'message' => 'no_price_data'], 200);
@@ -113,6 +119,8 @@ class PlanController extends Controller
                 'created_at' => date('Y-m-d h:i:s'),
             ]);
 
+
+
             return response()->json([
                 'status' => true,
                 'message' => 'success',
@@ -122,7 +130,7 @@ class PlanController extends Controller
 
     public function viewMyPlans(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         if($user->hasRole('parent'))  $request->merge(["parent_id" =>  $user->id]);
 
         $validator = Validator::make($request->all(), [
@@ -145,7 +153,7 @@ class PlanController extends Controller
 
     public function viewMyInvoices(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         if($user->hasRole('parent'))  $request->merge(["parent_id" =>  $user->id]);
 
         $validator = Validator::make($request->all(), [
@@ -165,7 +173,7 @@ class PlanController extends Controller
 
     public function changePlan(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         if($user->hasRole('parent'))  $request->merge(["parent_id" =>  $user->id]);
 
         $validator = Validator::make($request->all(), [
@@ -192,10 +200,10 @@ class PlanController extends Controller
         }
         else return response()->json(['status' => false, 'message' => 'no_active_plans'], 200);
     }
-
     public function cancelPlan(Request $request)
     {
-        $user = Auth::guard()->user(); 
+
+        $user = Auth::guard()->user();
         if($user->hasRole('parent'))  $request->merge(["parent_id" =>  $user->id]);
 
         $validator = Validator::make($request->all(), [
@@ -214,6 +222,8 @@ class PlanController extends Controller
             $myPlan->status = 'canceled';
             $myPlan->save();
 
+            event(new  NotifyEvent($parent->first_name ." ". $parent->last_name. ' canceled the ' .$myPlan->plan->name));
+
             return response()->json(['status' => true, 'message' => 'plan_canceled'], 201);
         }
         else return response()->json(['status' => false, 'message' => 'no_active_plans'], 200);
@@ -230,7 +240,7 @@ class PlanController extends Controller
         $checkPlanExists = UsersPlan::where('user_id', $decriptedUser)->whereIn('status', ['active', 'succeeded'])->count();
         if($checkPlanExists) return response()->json(['status' => false, 'message' => 'plan_already_exists' ], 200);
 
-        
+
         $checkPlan = UsersPlan::where('user_id', $decriptedUser)->orderBy('id', 'DESC')->first();
 
         if($checkPlan){

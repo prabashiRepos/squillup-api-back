@@ -36,7 +36,7 @@ class QuestionAndAnswerController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         if($user->hasRole("student")) $request->merge(["user_id" =>  $user->id]);
 
         $request->validate([
@@ -49,7 +49,7 @@ class QuestionAndAnswerController extends Controller
         ]);
 
         $qa =  new QA($request->all()) ;
-        $lesson = lesson::find($request->lesson_id); 
+        $lesson = lesson::find($request->lesson_id);
         $qa->chapter_id = $lesson->chapter_id;
 
         $attachmentNames = [];
@@ -64,7 +64,7 @@ class QuestionAndAnswerController extends Controller
         $qa->attachment = $attachmentNames;
 
         if($qa->save()){
-            $qa = QA::with('user')   
+            $qa = QA::with('user')
                             ->with('lesson', function($query){
                                 $query->select('id', 'name','number', 'chapter_id');
                             })
@@ -82,7 +82,7 @@ class QuestionAndAnswerController extends Controller
 
     public function index(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         $whereUserId = ($user->hasRole("superamdin")) ? 'user_id <> ""' : 'user_id = "'.$user->id.'"';
 
         $whereOrder = ($request->order == 'latest') ? 'desc' : 'asc';
@@ -93,7 +93,7 @@ class QuestionAndAnswerController extends Controller
         $whereChapterId = (value($request->chapter_id)) ? 'chapter_id = "'.$request->chapter_id.'"' : 'chapter_id <> ""';
 
 
-        $qas = QA::with('user')   
+        $qas = QA::with('user')
                             ->with('lesson', function($query){
                                 $query->select('id', 'name','number', 'chapter_id');
                             })
@@ -111,11 +111,11 @@ class QuestionAndAnswerController extends Controller
 
     public function update(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         if($user->hasRole("student")){
             $validateId = 'required|exists:q_a_s,id,user_id,'.$user->id;
             $request->merge(["user_id" =>  $user->id]);
-        } 
+        }
         else $validateId = 'required|exists:q_a_s,id';
 
         $request->validate([
@@ -128,9 +128,9 @@ class QuestionAndAnswerController extends Controller
             'attachment.*' => 'required|validBase64Image',
         ]);
 
-        $qa = QA::find($request->id); 
+        $qa = QA::find($request->id);
         $qa->fill($request->all());
-        $lesson = lesson::find($request->lesson_id); 
+        $lesson = lesson::find($request->lesson_id);
         $qa->chapter_id = $lesson->chapter_id;
 
         $attachmentNames = [];
@@ -143,15 +143,15 @@ class QuestionAndAnswerController extends Controller
         }
 
         $qa->attachment = $attachmentNames;
-        
+
         if($qa->save()){
-            $qa = QA::with('user')   
+            $qa = QA::with('user')
                             ->with('lesson', function($query){
                                 $query->select('id', 'name','number', 'chapter_id');
                             })
                             ->with('chapter')
                             ->find($qa->id);
-                            
+
             return response()->json([
                 'code' => 201,
                 'data' => $qa,
@@ -163,16 +163,16 @@ class QuestionAndAnswerController extends Controller
 
     public function delete(Request $request)
     {
-        $user = Auth::guard()->user(); 
+        $user = Auth::guard()->user();
         if($user->hasRole("student")){
             $validateId = 'required|exists:q_a_s,id,user_id,'.$user->id;
             $request->merge(["user_id" =>  $user->id]);
-        } 
+        }
         else $validateId = 'required|exists:q_a_s,id';
 
         $request->validate([ 'id' => $validateId]);
 
-        $qa = QA::find($request->id); 
+        $qa = QA::find($request->id);
 
         if($qa->delete()){
             return response()->json([
@@ -180,6 +180,6 @@ class QuestionAndAnswerController extends Controller
                 'status' => Lang::get('messages.qa_delete_success'),
             ], 201);
         }
-        else throw new NotFoundHttpException(Lang::get('messages.qa_not_found')); 
+        else throw new NotFoundHttpException(Lang::get('messages.qa_not_found'));
     }
 }

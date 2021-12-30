@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Events\MyEvent;
+use App\Events\NotifyEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -214,7 +216,18 @@ $api->version('v1', function ($api) {
             //activity_log
             $api->post('viewActivityLog', 'App\Api\V1\Controllers\SuperAdmin\ActivityController@index');
 
+            //backup
+            $api->post('createBackUp', 'App\Api\V1\Controllers\SuperAdmin\BackupController@store');
+            $api->post('viewBackUp', 'App\Api\V1\Controllers\SuperAdmin\BackupController@index');
+            $api->post('downloadBackUp/{file_name}', 'App\Api\V1\Controllers\SuperAdmin\BackupController@download');
+
+
         });
+
+        $api->post('notify', function () {
+            event(new  NotifyEvent('nofification'));
+        });
+
 
         // $api->get('protected', function() {
         //     return response()->json([
@@ -238,7 +251,7 @@ $api->version('v1', function ($api) {
         ]);
     });
 
-
+    
     $api->group(['prefix' => 'parentauth', 'middleware' => ['cors', 'throttle:60,10']], function($api) {
 
         $api->post('signup', 'App\Api\V1\Controllers\ParentAuth\SignUpController@register');
@@ -247,6 +260,10 @@ $api->version('v1', function ($api) {
         $api->post('verifyOtp', 'App\Api\V1\Controllers\ParentAuth\SignUpController@verifyOtp');
         $api->post('login', 'App\Api\V1\Controllers\ParentAuth\LoginController@parentLogin')->name('parentLogin');
         $api->post('logout', 'App\Api\V1\Controllers\ParentAuth\LogoutController@logout');
+
+        $api->post('recovery', 'App\Api\V1\Controllers\ParentAuth\ForgotPasswordController@sendResetEmail');
+        $api->post('checkResetPasswordToken', 'App\Api\V1\Controllers\ParentAuth\ResetPasswordController@checkResetPasswordToken');
+        $api->post('reset', 'App\Api\V1\Controllers\ParentAuth\ResetPasswordController@resetPassword');
 
     });
 });

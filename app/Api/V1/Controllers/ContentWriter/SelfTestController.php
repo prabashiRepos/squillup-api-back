@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Lang;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Api\V1\Controllers\ContentWriter\QuestionController;
+use App\Events\NotifyEvent;
 use App\Models\Question;
 
 class SelfTestController extends Controller
@@ -75,6 +76,8 @@ class SelfTestController extends Controller
                     $query->select('id', 'name');
                 })
                 ->find($selfTest->id);
+
+            event(new  NotifyEvent('New self test has been created by '.$selfTest->user->first_name ." ". $selfTest->user->last_name));
 
             return response()->json([
                 'code'   => 201,

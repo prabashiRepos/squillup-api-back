@@ -2,6 +2,7 @@
 
 namespace App\Api\V1\Controllers\SuperAdmin;
 
+use App\Events\NotifyEvent;
 use App\Models\QnA;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Lang;
@@ -11,6 +12,7 @@ use App\Models\Reply;
 use App\Models\User;
 use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Support\Facades\DB;
 
 
 class QnAController extends Controller
@@ -24,6 +26,16 @@ class QnAController extends Controller
     {
         $qna = QnA::with(['subject', 'lesson', 'chapter', 'user', 'reply'])->get();
 
+
+        $qnas = QnA::with('reply')
+        ->where('updated_at', '>', Carbon::now()->subDays(1))
+        ->doesntHave('reply')
+        ->whereNull('sms_reminder')
+        // ->where('user_id', '!=' , 0)
+        // ->groupBy(DB::raw('HOUR(created_at)'))
+        ->get();
+
+        dd($qnas);
         return response()->json($qna, 201);
     }
 
@@ -57,7 +69,9 @@ class QnAController extends Controller
         $qna = new QnA($request->all());
 
         if ($qna->save()) {
-            $qna = QnA::with(['subject', 'lesson', 'chapter', 'user'])->find($qna->id);
+            $qna = QnA::with(['subject', 'lesson', 'chapter', 'user','student'])->find($qna->id);
+
+            event(new  NotifyEvent('You have received new question from '.$qna->student->first_name ." ". $qna->student->last_name. ' in ' .$qna->subject->name));
 
             return response()->json([
                 'code'   => 201,
@@ -213,6 +227,9 @@ class QnAController extends Controller
 
                     if ($assignUser->save()) {
                         $assignUser = QuestionUser::find($assignUser->id);
+                        $qna = QnA::find($request->question_id);
+                        $qna->user_id = $request->user_id;
+                        $qna->save();
 
                         return response()->json([
                             'code'   => 201,

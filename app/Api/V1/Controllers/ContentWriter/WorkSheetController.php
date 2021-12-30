@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Lang;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Api\V1\Controllers\ContentWriter\QuestionController;
+use App\Events\NotifyEvent;
 
 class WorkSheetController extends Controller
 {
@@ -85,6 +86,7 @@ class WorkSheetController extends Controller
                 }
             }
 
+            event(new  NotifyEvent('New worksheet has been created by '.$WorkSheet->user->first_name ." ". $WorkSheet->user->last_name));
 
             $WorkSheet->questions_data = $questionsData;
 
