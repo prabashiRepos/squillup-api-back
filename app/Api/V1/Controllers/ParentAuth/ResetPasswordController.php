@@ -27,13 +27,13 @@ class ResetPasswordController extends Controller
 
         $tokens = DB::table('password_resets')->where('email', $request->email)->get();
 
-        // if($tokens->count()){
-        //     if (Hash::check($request->token, $tokens[0]->token)) {
+        if($tokens->count()){
+            if (Hash::check($request->token, $tokens[0]->token)) {
                 return response()->json(['status' => 'ok', 'data' => $tokens[0]->token], 201);
-        //     }
-        // }
+            }
+        }
 
-        //throw new NotFoundHttpException(); 
+        throw new NotFoundHttpException(); 
     }
 
     public function resetPassword(Request $request)
@@ -46,17 +46,17 @@ class ResetPasswordController extends Controller
         if ($validator->fails()) return response()->json($validator->errors(), 422);
 
         //remove this
-        $user = User::where('email', '=', $request->get('email'))->first();
-        $password = $request->password;
-        // $response = $this->broker()->reset(
-        //     $this->credentials($request), function ($user, $password) {
+        // $user = User::where('email', '=', $request->get('email'))->first();
+        // $password = $request->password;
+        $response = $this->broker()->reset(
+            $this->credentials($request), function ($user, $password) {
                 $this->reset($user, $password);
-        //     }
-        // );
+            }
+        );
 
-        // if($response !== Password::PASSWORD_RESET) {
-        //     throw new HttpException(500);
-        // }
+        if($response !== Password::PASSWORD_RESET) {
+            throw new HttpException(500);
+        }
 
         return response()->json([
             'code' => 201,

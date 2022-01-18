@@ -266,4 +266,20 @@ $api->version('v1', function ($api) {
         $api->post('reset', 'App\Api\V1\Controllers\ParentAuth\ResetPasswordController@resetPassword');
 
     });
+
+    $api->group(['prefix' => 'parentprofile','middleware' => ['auth:sanctum', 'cors']], function($api) {
+        $api->post('viewProfile', 'App\Api\V1\Controllers\Auth\UserController@viewProfile');
+        $api->post('updateProfile', 'App\Api\V1\Controllers\Auth\UserController@updateProfile');
+        $api->post('uploadProfileImage', 'App\Api\V1\Controllers\Auth\UserController@uploadProfileImage');
+        $api->post('changePassword', 'App\Api\V1\Controllers\Auth\UserController@changePassword');
+
+        //student_by_parent
+        $api->post('createStudentByParent', 'App\Api\V1\Controllers\Parent\Student\StudentDetailController@store');
+        $api->post('viewStudentByParent', 'App\Api\V1\Controllers\Parent\Student\StudentDetailController@index');
+        $api->post('updateStudentByParent', 'App\Api\V1\Controllers\Parent\Student\StudentDetailController@update');
+        $api->post('deleteStudentByParent', 'App\Api\V1\Controllers\Parent\Student\StudentDetailController@delete');
+
+
+    });
+
 });

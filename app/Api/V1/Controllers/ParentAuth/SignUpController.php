@@ -21,13 +21,13 @@ class SignUpController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'full_name' => 'required|string|max:255',
+            // 'last_name' => 'required|string|max:255',
             'email' => 'required|unique:users,email|email:filter|max:200',
             'phone' => 'required|unique:users,phone|regex:/[0-9]{9}/',
             'country_code' => 'sometimes|required|integer',
             'password' => 'required|min:6|max:50',
-            'conf_password' => 'required|min:6|max:50'
+            // 'conf_password' => 'required|min:6|max:50'
         ]);
 
         $user = new User($request->all());
@@ -103,7 +103,7 @@ class SignUpController extends Controller
         try {
             Notification::route('mail', $request->email)->notify(new OtpNotification($data));
 
-            //$notify = Notification::send($data, new OtpNotification($data));
+            $notify = Notification::send($data, new OtpNotification($data));
         } catch (\Exception$e) {
 
         }
